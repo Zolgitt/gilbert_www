@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+        <link href="css/ionic.min.css" rel="stylesheet">
+        <!--<link href="ratchet-theme.css" rel="stylesheet">-->
+        <link rel="stylesheet" href="css/onsenui.css">
+        <link rel="stylesheet" href="css/onsen-css-components.css">
+        <link rel="stylesheet" href="css/custom.css">
+        <!--<link rel="stylesheet" href="md_contact_list.css">-->
+        <!--<link href='https://fonts.googleapis.com/css?family=Roboto:400,300italic,300,400italic,500,500italic,700,700italic' rel='stylesheet'
+            type='text/css'>-->
+            <link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet">
+                
+    </head>
+
+    <body>
+        <ons-navigator id="myNavigator" page="main.html"></ons-navigator>    
+
+            <!---------------------------------------
+                Main page of the app
+            ---------------------------------------->
+            <ons-template id="main.html">
+                <ons-page class="page" id="main">
+                    <ons-toolbar>
+                        <div class="left" >
+                            <ons-toolbar-button>
+                                <ons-icon icon="ion-refresh"  onclick="refreshData();"></ons-icon>&nbsp;
+                                <ons-icon icon="ion-android-exit" onclick="logoutSf();" style="margin-left:15px;"></ons-icon>
+                            </ons-toolbar-button>
+                        </div>
+                        <div class="center" style="margin-top:-3px;text-align: center;">
+                            Gilbert WMS Scanner<br/>
+                            <div class="subtitle-wrapper">
+                                <div id="username-subtitle">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="right">
+                            <!--<ons-toolbar-button onclick="showUserInfo();">
+                                <ons-icon icon="ion-person"></ons-icon>
+                            </ons-toolbar-button>                            -->
+                            <ons-toolbar-button  onclick="lockScreen();">
+                                <ons-icon icon="ion-power"></ons-icon>
+                            </ons-toolbar-button>
+                        </div>
+                    </ons-toolbar>
+                    <ons-tabbar>
+                        <ons-tab label="Ship" page="shipments.html" icon="ion-android-bus" active></ons-tab>
+                        <ons-tab label="Receive" page="receiveShipmentNew.html" icon="ion-ionic"></ons-tab>
+                        <ons-tab label="Transfer" page="transfer.html" icon="ion-shuffle"></ons-tab>
+                    </ons-tabbar>
+                </ons-page>
+            </ons-template> 
+
+            <!---------------------------------------
+                Ship tab of the app
+            ---------------------------------------->
+            <ons-template id="shipments.html">
+                <div id="shipmentsLoading" class="gil-page-loading">
+                    <svg class="progress-circular">
+                        <circle class="progress-circular__primary" cx="50%" cy="50%" r="40%" fill="none" stroke-width="10%" stroke-miterlimit="10"/>
+                    </svg>
+                </div>
+                <div class="search-bar">
+                    <input type="search" id="searchInput" class="search-input" placeholder="MAS Job # or Shipment ID" >       
+                    <!--<ons-icon icon="fa-search" size="40px" class="list__item__icon"></ons-icon>-->
+                    <!--<ons-input id="search" modifier="underbar" placeholder="Search" float></ons-input>-->
+                </div>
+                <div class="after-search-bar" id="searchResultBox">
+                </div>
+                <div class="navigation-bar">            
+                    <div class="center navigation-bar__center">
+                        Recent Open Shipments
+                    </div>
+                </div>
+                <ul class="list list--material" id="shipmentList">
+                    <!--Open shipment list will be rendered here-->
+                </ul>
+            </ons-template>
+            <!---------------------------------------
+                Transfer tab of the app
+            ---------------------------------------->
+            <ons-template id="transfer.html">
+                <ul class="list list--material" id="transferList">
+                   
+                </ul>
+                <ons-fab position="right bottom" id="shipmentPlus" class="ios-background">
+                    <ons-ripple></ons-ripple>
+                    <ons-icon icon="md-plus"></ons-icon>
+                </ons-fab>
+            </ons-template>
+
+            <!---------------------------------------
+                Receive tab of the app
+            ---------------------------------------->
+            <ons-template id="receiveShipmentNew.html">
+                <!--
+                <div id="receiveShipmentsLoading" class="gil-page-loading">
+                    <svg class="progress-circular">
+                        <circle class="progress-circular__primary" cx="50%" cy="50%" r="40%" fill="none" stroke-width="10%" stroke-miterlimit="10"/>
+                    </svg>
+                </div>
+                -->
+                <ons-list>
+                    <ons-list-header>Trailer ID</ons-list-header>
+                    <div class="input-wrapper">
+                        <input type="text" placeholder="Trailer ID here.." id="receiveTrailerId"/>
+                    </div>
+                </ons-list>
+                
+                <ul class="list list--material" id="receviedList">
+                    <!--Scanned items will be listed here-->
+                </ul>
+                <ons-button modifier="large" onclick="resetReceiveScreen();" ripple="" class="button button--large">
+                    <ons-ripple class="ripple">
+                        <div class="ripple__wave"></div>
+                        <div class="ripple__background"></div>
+                    </ons-ripple>
+                    Done
+                </ons-button>
+                <ons-fab position="right bottom" id="receiveScanButton" onclick="startNewReceiving();" class="ios-background">
+                    <ons-ripple></ons-ripple>
+                    <ons-icon icon="md-camera"></ons-icon>
+                </ons-fab>
+            </ons-template>
+
+            <ons-template id="receiveShipmentList.html">
+                <!--
+                <div id="receiveShipmentsLoading" class="gil-page-loading">
+                    <svg class="progress-circular">
+                        <circle class="progress-circular__primary" cx="50%" cy="50%" r="40%" fill="none" stroke-width="10%" stroke-miterlimit="10"/>
+                    </svg>
+                </div>
+                -->
+                <ul class="list list--material" id="receiveShipmentList">
+                    <!--Open shipment list will be rendered here-->
+                </ul>
+            </ons-template>
+
+            <!---------------------------------------
+                Details page from ship tab of the app
+            ---------------------------------------->
+            <ons-template id="shipmentDetails.html">
+                <ons-page class="page" id="shipmentDetails">
+                    <ons-toolbar class="navigation-bar">
+                        <div class="left navigation-bar__left">
+                            <ons-back-button class="back-button" style="display: inline-block;">
+                                <span class="back-button__icon back-button--material__icon"></span>
+                                <span class="back-button__label back-button--material__label">Back</span>
+                            </ons-back-button>
+                        </div>
+                        <div class="center navigation-bar__center navigation-bar__title gil-title">
+                            
+                        </div>
+                    </ons-toolbar>
+                    <div class="move-right">
+                        <ons-button id="ship-receive-btn" ripple="" class="button">
+                            <ons-ripple class="ripple"></ons-ripple>
+                            <span id="scan-btn-text">
+                                Ship It
+                            </span>
+                        </ons-button>
+                    </div>
+                    <!--<div class="clear-fix"></div>-->
+                    <ul class="list list--material">
+                        <li class="list__item list__item--material">
+                            <div class="list__item__center list__item--material__center">
+                            <div class="list__item__title list__item--material__title">Type</div>
+                            <div class="list__item__subtitle list__item--material__subtitle gil-type"></div>
+                            </div>
+                        </li>
+                        <li class="list__item list__item--material">
+                            <div class="list__item__center list__item--material__center">
+                            <div class="list__item__title list__item--material__title">Shipment info</div>
+                            <div class="list__item__subtitle list__item--material__subtitle gil-moreInfo">
+                                <!--More details will be loaded here-->
+                            </div>
+                            </div>
+                        </li>
+                    </ul>
+                    <ons-list class="contact-block" id="gil-assets" modifier="material">
+                        <ons-list-item modifier="material divider">
+                            <div class="list__item__center">
+                                Loading Shipment Conainers...
+                            </div>
+                        </ons-list-item>
+                        <ons-list-item modifier="material short-divider">
+                            <div class="list__item__center">
+                                <ons-progress-bar indeterminate></ons-progress-bar>
+                            </div>
+                        </ons-list-item>
+                    </ons-list>
+
+                    <!--<ons-button modifier="material large" id="scanButton" onclick="scanAsset();" ripple="" class="button button--material button--large">
+                        <ons-ripple class="ripple">
+                            <div class="ripple__wave"></div>
+                            <div class="ripple__background"></div>
+                        </ons-ripple>
+                        <span id="scan-btn-text">
+                            Scan Assets
+                        </span>
+                    </ons-button>-->
+                    <ons-fab position="right bottom" id="scanButton" class="ios-background">
+                        <ons-ripple></ons-ripple>
+                        <ons-icon icon="md-camera"></ons-icon>
+                    </ons-fab>
+                </ons-page>
+            </ons-template>
+
+
+            <!---------------------------------------
+                Details page from receive tab of the app
+            ---------------------------------------->
+            <ons-template id="receiveShipment.html">
+                <ons-page class="page" id="receiveShipment">
+                    <ons-toolbar class="navigation-bar">
+                        <div class="left navigation-bar__left">
+                            <ons-back-button class="back-button" style="display: inline-block;">
+                                <span class="back-button__icon back-button--material__icon"></span>
+                                <span class="back-button__label back-button--material__label">Back</span>
+                            </ons-back-button>
+                        </div>
+                        <div class="center navigation-bar__center navigation-bar__title gil-receive-title"></div>
+                    </ons-toolbar>
+                     <div class="move-right">
+                        <ons-button modifier="material" ripple="" class="button button--material" onclick="updateShipmentStatus('Received');">
+                            <ons-ripple class="ripple"></ons-ripple>
+                            Received
+                        </ons-button>       
+                     </div>
+                    <ul class="list list--material">
+                        <li class="list__item list__item--material">
+                            <div class="list__item__center list__item--material__center">
+                            <div class="list__item__title list__item--material__title">Type</div>
+                            <div class="list__item__subtitle list__item--material__subtitle gil-receive-type"></div>
+                            </div>
+                        </li>
+                        <li class="list__item list__item--material">
+                            <div class="list__item__center list__item--material__center">
+                                <div class="list__item__title list__item--material__title">Shipment info</div>
+                                <div class="list__item__subtitle list__item--material__subtitle gil-receive-moreInfo">
+                                    <!--More details will be loaded here-->
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                    <ons-list class="contact-block" id="gil-receive-assets" modifier="material">
+                        <ons-list-item modifier="material divider">
+                            <div class="list__item__center">
+                                Loading Shipment Conainers...
+                            </div>
+                        </ons-list-item>
+                        <ons-list-item modifier="material short-divider">
+                            <div class="list__item__center">
+                                <ons-progress-bar indeterminate></ons-progress-bar>
+                            </div>
+                        </ons-list-item>
+                    </ons-list>
+                    <ons-button modifier="large" onclick="receiveAsset();" ripple="" class="button button--large">
+                        <ons-ripple class="ripple">
+                            <div class="ripple__wave"></div>
+                            <div class="ripple__background"></div>
+                        </ons-ripple>
+                        Scan Received Assets
+                    </ons-button>
+                </ons-page>
+            </ons-template>
+
+            <!---------------------------------------
+                Opportunity Details page
+            ---------------------------------------->
+            <ons-template id="oppDetails.html">
+                <ons-page class="page" id="oppDetails">
+                    <ons-toolbar class="navigation-bar">
+                        <div class="left navigation-bar__left">
+                            <ons-back-button class="back-button" style="display: inline-block;">
+                                <span class="back-button__icon back-button--material__icon"></span>
+                                <span class="back-button__label back-button--material__label">Back</span>
+                            </ons-back-button>
+                        </div>
+                        <div class="center navigation-bar__center navigation-bar__title gil-opp-title"></div>
+                    </ons-toolbar>
+                    <ul class="list list--material">
+                        <li class="list__item list__item--material">
+                            <div class="list__item__center list__item--material__center">
+                            <div class="list__item__title list__item--material__title">Name</div>
+                            <div class="list__item__subtitle list__item--material__subtitle gil-opp-name"></div>
+                            </div>
+                        </li>
+                        <li class="list__item list__item--material">
+                            <div class="list__item__center list__item--material__center">
+                                <div class="list__item__title list__item--material__title">Opportunity Info</div>
+                                <div class="list__item__subtitle list__item--material__subtitle gil-opp-moreInfo">
+                                    <!--More details will be loaded here-->
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                    <ons-list class="contact-block" id="gil-opp-shipments" modifier="material">
+                        <ons-list-item modifier="material divider">
+                            <div class="list__item__center">
+                                Loading Shipments...
+                            </div>
+                        </ons-list-item>
+                        <ons-list-item modifier="material short-divider">
+                            <div class="list__item__center">
+                                <ons-progress-bar indeterminate></ons-progress-bar>
+                            </div>
+                        </ons-list-item>
+                    </ons-list>
+                    <!--<ons-button modifier="material large" onclick="receiveAsset" ripple="" class="button button--material button--large">
+                        <ons-ripple class="ripple">
+                            <div class="ripple__wave"></div>
+                            <div class="ripple__background"></div>
+                        </ons-ripple>
+                        Scan Received Assets
+                    </ons-button>-->
+
+                    <ons-fab position="right bottom" id="oppShipmentPlus" class="ios-background">
+                        <ons-ripple></ons-ripple>
+                        <ons-icon icon="md-plus"></ons-icon>
+                    </ons-fab>
+                </ons-page>
+            </ons-template>
+
+            <!---------------------------------------
+                New Shipment page of the app
+            ---------------------------------------->
+            <ons-template id="newShipment.html">
+                <ons-page class="page" id="newShipment">
+                    <ons-toolbar class="navigation-bar">
+                        <!--<div class="left"><ons-back-button>Back</ons-back-button></div>-->
+                        <div class="left navigation-bar__left">
+                            <ons-back-button class="back-button" style="display: inline-block;">
+                                <span class="back-button__icon"></span>
+                                <span class="back-button__label">Back</span>
+                            </ons-back-button>
+                        </div>
+                        <div class="center navigation-bar__center navigation-bar__title" id="new-title">
+                            New Shipment
+                        </div>
+                    </ons-toolbar>
+                    <div class="new-shipment">
+                        <ons-list class="opp-parent">
+                            <ons-list-header>MAS Job #</ons-list-header>
+                            <div class="input-wrapper parent-opp-info">
+                                <!--Parent Opportunity name will be displayed here-->
+                            </div>
+                        </ons-list>
+                        <!--Hiding as per client's request-->
+                        <ons-list class="type-parent" style="display: none;">
+                            <ons-list-header>Type</ons-list-header>
+                            <ons-list-item tappable>
+                                <label class="left">
+                                    <ons-input name="type" type="radio" input-id="return" checked value="Return shipment to warehouse"></ons-input>
+                                </label>
+                                <label for="return" class="center">
+                                    Return shipment to warehouse
+                                </label>
+                            </ons-list-item>
+                            <ons-list-item tappable>
+                                <label class="left">
+                                    <ons-input name="type" type="radio" input-id="to" value="Shipment to convention center"></ons-input>
+                                </label>
+                                <label for="to" class="center">
+                                    Shipment to convention center
+                                </label>
+                            </ons-list-item>
+                        </ons-list>
+                        <ons-list>
+                            <ons-list-header>Carrier</ons-list-header>
+                            <div class="input-wrapper">
+                                <select class="select-dropdown" id="carrier">
+                                </select>
+                            </div>
+                        </ons-list>
+                        <ons-list id="trailerParent">
+                            <ons-list-header>Trailer ID</ons-list-header>
+                            <div class="input-wrapper">
+                                <input type="text" placeholder="Trailer ID here.." id="trailerId"/>
+                            </div>
+                        </ons-list>
+                        <ons-list>
+                            <ons-list-header>From Location</ons-list-header>
+                            <div class="input-wrapper">
+                                <select class="select-dropdown" id="fromLocation">
+                                </select>
+                            </div>
+                        </ons-list>
+                        <ons-list>
+                            <ons-list-header>To Location</ons-list-header>
+                            <div class="input-wrapper">
+                                <select class="select-dropdown" id="toLocation">
+                                </select>
+                            </div>
+                        </ons-list>
+                        <!--
+                        <ons-list>
+                            <ons-list-header>Ship date</ons-list-header>
+                            <div class="input-wrapper">
+                                <input type="date" placeholder="MM/DD/YYYY" id="shipDate"></input>
+                            </div>
+                        </ons-list>
+                        <ons-list>
+                            <ons-list-header>Expected Avilability date</ons-list-header>
+                            <div class="input-wrapper">
+                                <input type="date" placeholder="MM/DD/YYYY"  id="availabilityDate"></input>
+                            </div>
+                        </ons-list>-->
+                    </div>
+                    <ons-button modifier="large" onclick="createShipment();" ripple="" class="button button--large">
+                        <ons-ripple class="ripple">
+                            <div class="ripple__wave"></div>
+                            <div class="ripple__background"></div>
+                        </ons-ripple>
+                        Create New Shipment
+                    </ons-button>
+                </ons-page>
+            </ons-template>
+
+            <ons-dialog id="dialog-1">
+                <div style="text-align: center; padding: 10px;">
+                    <p>
+                    This is a dialog.
+                    <p>
+
+                    <p>
+                    <ons-button onclick="hideDialog('dialog-1')">Close</ons-button>
+                    </p>
+                </div>
+            </ons-dialog>
+            <ons-modal id="modal">
+                <div>
+                    <input type="text" class="pass-wrapper" id="passCode" placeholder="Enter passcode"/><br/>
+                    <select class="select-dropdown" id="locationList">
+                    </select><br/><br/>
+                    <ons-icon icon="ion-log-in" class="login-btn" onclick="verifyUser();"/>
+                </div>
+            </ons-modal>
+            <ons-modal id="userInfo">
+                <div>
+                    <img class="profile-img" src="https://cms.springbranchisd.com/portals/29/placeholder-person.png"/>
+                    <br/>
+                    <div id="username">
+                    </div>
+                    <br/>
+                    <ons-icon icon="ion-power" class="login-btn" onclick="lockScreen();"></ons-icon>
+                    &nbsp;&nbsp;
+                    <ons-icon icon="ion-close" class="login-btn" onclick="hideUserInfo();" /></ons-icon>
+                </div>
+            </ons-modal>
+                                        
+        <script src="cordova.js"></script>
+        <script src="js/force.js"></script>
+        <script src="js/fastclick.js"></script>
+        <script src="js/onsenui.js"></script>
+        <script src="js/app.js"></script>
+    </body>
+
+</html>
